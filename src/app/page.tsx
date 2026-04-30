@@ -140,7 +140,7 @@ export default async function Dashboard() {
           <div className="flex justify-between items-center mb-3">
             <div>
               <div className="text-[13px] font-semibold text-text-md">{data.siapJual.length} ekor siap jual</div>
-              <div className="text-[11px] text-text-sm mt-0.5">Total Valuasi Kandang:</div>
+              <div className="text-[11px] text-text-sm mt-0.5">Total Potensi Pendapatan:</div>
             </div>
             <div className="text-right">
               <div className="font-[family-name:var(--font-serif)] text-[26px] text-primary">{formatRupiah(data.totalValuasi).replace('Rp ', 'Rp')}</div>

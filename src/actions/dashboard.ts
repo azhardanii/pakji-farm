@@ -50,9 +50,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     const umur = hitungUmur(k.tanggal_lahir);
     const est = hitungEstimasi(k.jenis_kelamin, umur.totalHari);
     totalBobot += est.bobot;
-    totalValuasi += est.harga;
 
     if (cekSiapJual(k.jenis_kelamin, umur.totalHari, k.jumlah_melahirkan)) {
+      totalValuasi += est.harga;
       siapJualArr.push({
         nama: k.nama || k.id_sistem,
         id_sistem: k.id_sistem,
