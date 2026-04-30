@@ -46,10 +46,9 @@ export default function FAB() {
       {menuOpen && (
         <div
           className="fixed inset-0 bg-black/55 z-[300] flex items-end justify-center backdrop-blur-[3px]"
-          style={{ maxWidth: '430px', left: '50%', transform: 'translateX(-50%)' }}
           onClick={(e) => { if (e.target === e.currentTarget) setMenuOpen(false); }}
         >
-          <div className="bg-surface w-full rounded-t-[22px] px-[18px] pt-5 pb-9 animate-slide-up-modal">
+          <div className="bg-surface w-full max-w-[430px] rounded-t-[22px] px-[18px] pt-5 pb-9 animate-slide-up-modal">
             <div className="w-9 h-1 bg-border rounded-full mx-auto mb-[18px]" />
             <div className="text-[11px] text-text-sm font-bold mb-3.5 uppercase tracking-widest">
               Input Cepat
