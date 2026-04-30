@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-bg: #F4F6F0;
+  --color-surface: #FFFFFF;
+  --color-surface2: #EEF1E8;
+  --color-surface3: #E5E9DC;
+  --color-primary: #2E5E3E;
+  --color-primary-d: #1C3E29;
+  --color-primary-light: #E8F2EC;
+  --color-primary-mid: #5A9070;
+  --color-accent: #B56B1F;
+  --color-accent-light: #FAF0E2;
+  --color-danger: #B83232;
+  --color-danger-light: #FCEBEB;
+  --color-warning: #C07010;
+  --color-warning-light: #FEF3E2;
+  --color-info: #1E5F8A;
+  --color-info-light: #E6F1FA;
+  --color-success: #277A48;
+  --color-success-light: #E7F4EC;
+  --color-text: #18201A;
+  --color-text-md: #3E4D42;
+  --color-text-sm: #6B7D70;
+  --color-border: #DDE3D6;
+
+  --font-serif: 'DM Serif Display', serif;
+  --font-sans: 'DM Sans', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── BASE RESET ─────────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ─── ANIMATIONS ─────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(18px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(181, 107, 31, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(181, 107, 31, 0); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease;
+}
+
+.animate-slide-up-modal {
+  animation: slideUpModal 0.3s ease;
+}
+
+.animate-count-up {
+  animation: countUp 0.4s ease;
+}
+
+/* ─── SCROLLBAR ──────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9px; }
+
+/* ─── CHIP SCROLL ────────────────────────── */
+.chip-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.chip-scroll::-webkit-scrollbar { display: none; }
+
+/* ─── FEED BAR ───────────────────────────── */
+.feed-bar-silase {
+  background: linear-gradient(90deg, var(--color-primary-d), var(--color-primary-mid));
+}
+.feed-bar-segar {
+  background: linear-gradient(90deg, var(--color-accent), #E8943A);
+}
+
+/* ─── FINANCE HERO ───────────────────────── */
+.finance-hero-bg {
+  background: linear-gradient(140deg, var(--color-primary-d) 0%, var(--color-primary) 100%);
+}
+
+/* ─── FORM INPUT FOCUS ───────────────────── */
+.form-input:focus {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
 }

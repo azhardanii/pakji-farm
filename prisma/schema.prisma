@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ================= ENUMS =================
+enum Kelamin {
+  JANTAN
+  BETINA
+}
+
+enum StatusKambing {
+  AKTIF
+  MATI
+  TERJUAL
+}
+
+enum MarketType {
+  PETERNAK
+  PEMOTONG
+}
+
+// ================= MODELS =================
+
+model Kambing {
+  id                String        @id @default(uuid())
+  id_sistem         String        @unique
+  nama              String?
+  jenis_kelamin     Kelamin
+  tanggal_lahir     DateTime
+  tanggal_masuk     DateTime      @default(now())
+  status            StatusKambing @default(AKTIF)
+
+  // --- Khusus Betina ---
+  jumlah_melahirkan Int           @default(0)
+  target_market     MarketType?
+
+  // --- Lineage (Garis Keturunan) ---
+  induk_jantan_id   String?
+  induk_betina_id   String?
+  induk_jantan      Kambing?      @relation("BapakKeAnak", fields: [induk_jantan_id], references: [id])
+  induk_betina      Kambing?      @relation("IbuKeAnak", fields: [induk_betina_id], references: [id])
+  anak_dari_bapak   Kambing[]     @relation("BapakKeAnak")
+  anak_dari_ibu     Kambing[]     @relation("IbuKeAnak")
+
+  // --- Relasi Tabel ---
+  foto              FotoKambing[]
+  rekam_medis       RekamMedis[]
+
+  // Relasi Perkawinan (Sebagai Betina atau Pejantan)
+  riwayat_kawin_betina RiwayatKawin[] @relation("BetinaKawin")
+  riwayat_kawin_jantan RiwayatKawin[] @relation("PejantanKawin")
+
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+}
+
+model FotoKambing {
+  id          String   @id @default(uuid())
+  kambing_id  String
+  kambing     Kambing  @relation(fields: [kambing_id], references: [id], onDelete: Cascade)
+  url         String
+  created_at  DateTime @default(now())
+}
+
+model RiwayatKawin {
+  id                String   @id @default(uuid())
+  kambing_betina_id String
+  pejantan_id       String
+  
+  kambing_betina    Kambing  @relation("BetinaKawin", fields: [kambing_betina_id], references: [id], onDelete: Cascade)
+  pejantan          Kambing  @relation("PejantanKawin", fields: [pejantan_id], references: [id], onDelete: SetNull)
+
+  tanggal_kawin     DateTime @default(now())
+  prediksi_lahir    DateTime
+  status_berhasil   Boolean?
+
+  created_at        DateTime @default(now())
+}
+
+model RekamMedis {
+  id          String   @id @default(uuid())
+  kambing_id  String
+  kambing     Kambing  @relation(fields: [kambing_id], references: [id], onDelete: Cascade)
+  
+  tanggal     DateTime @default(now())
+  gejala      String
+  penanganan  String
+  
+  created_at  DateTime @default(now())
+}
+
+model TongSilase {
+  id                 String   @id @default(uuid())
+  nomor              Int
+  tanggal_pembuatan  DateTime
+  kapasitas_kg       Float
+  
+  created_at         DateTime @default(now())
+}
