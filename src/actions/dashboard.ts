@@ -66,13 +66,22 @@ export async function getDashboardData(): Promise<DashboardData> {
   // Pakan
   const pakanData = hitungPakan(totalBobot);
 
-  // Alerts & Agenda
+  // Alerts & Kondisi Kandang
   const alerts: DashboardData['alerts'] = [];
-  const agenda: DashboardData['agenda'] = [];
+  const agenda: DashboardData['agenda'] = []; // We'll repurpose this for Kondisi Kandang
 
-  // Check bunting tua (H-30)
-  for (const k of allKambing) {
-    if (k.riwayat_kawin_betina.length > 0) {
+  // 1. Kambing Bunting
+  const buntingKambing = allKambing.filter(k => k.riwayat_kawin_betina.length > 0);
+  if (buntingKambing.length > 0) {
+    const namaBunting = buntingKambing.map(k => k.nama || k.id_sistem).join(', ');
+    agenda.push({
+      type: 'ok',
+      text: `🤰 ${buntingKambing.length} ekor sedang bunting: ${namaBunting}`,
+      tag: 'Bunting',
+    });
+
+    // Check bunting tua (H-30)
+    for (const k of buntingKambing) {
       const rk = k.riwayat_kawin_betina[0];
       const sisaHari = hitungSisaHari(rk.prediksi_lahir);
       if (sisaHari <= 30 && sisaHari > 0) {
@@ -82,16 +91,11 @@ export async function getDashboardData(): Promise<DashboardData> {
           text: `${k.nama || k.id_sistem} memasuki H-${sisaHari} menjelang prediksi lahir. Turunkan dari kandang & tingkatkan silase!`,
           icon: '🚨',
         });
-        agenda.push({
-          type: 'urgent',
-          text: `🐐 ${k.nama || k.id_sistem} memasuki bunting tua — turunkan dari kandang & ubah rasio pakan!`,
-          tag: 'Kritis',
-        });
       }
     }
   }
 
-  // Siap jual notification
+  // 2. Siap jual notification
   if (siapJualArr.length > 0) {
     agenda.push({
       type: 'ok',
@@ -100,21 +104,28 @@ export async function getDashboardData(): Promise<DashboardData> {
     });
   }
 
-  // Tong silase
+  // 3. Tong silase
   const tongList = await prisma.tongSilase.findMany({ orderBy: { tanggal_pembuatan: 'desc' } });
+  const tongSiap = tongList.filter(t => hitungSisaSilase(t.tanggal_pembuatan).siap);
+  const tongProses = tongList.filter(t => !hitungSisaSilase(t.tanggal_pembuatan).siap);
+
+  if (tongList.length > 0) {
+    agenda.push({
+      type: 'ok',
+      text: `🪣 Tong Silase: ${tongSiap.length} siap pakai, ${tongProses.length} sedang fermentasi.`,
+      tag: 'Pakan',
+    });
+  }
+
+  // Check tong segera siap
   for (const t of tongList) {
     const { sisaHari, siap } = hitungSisaSilase(t.tanggal_pembuatan);
-    if (siap) {
-      agenda.push({
-        type: 'ok',
-        text: `🪣 Tong Silase #${t.nomor} siap dibuka hari ini (hari ke-21).`,
-        tag: 'Siap Buka',
-      });
-    } else if (sisaHari <= 3) {
-      agenda.push({
-        type: 'warn',
-        text: `🪣 Tong Silase #${t.nomor} akan siap dalam ${sisaHari} hari.`,
-        tag: 'Segera',
+    if (!siap && sisaHari <= 3) {
+      alerts.push({
+        type: 'warning',
+        title: 'Silase Segera Siap',
+        text: `Tong Silase #${t.nomor} akan siap dalam ${sisaHari} hari.`,
+        icon: '🪣',
       });
     }
   }

@@ -7,6 +7,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import FAB from '@/components/layout/FAB';
 import PakanClient from './PakanClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PakanPage() {
   // Hitung total bobot
   const allKambing = await prisma.kambing.findMany({
@@ -27,7 +29,7 @@ export default async function PakanPage() {
     <>
       <Header />
       
-      <main className="p-3.5 pb-[90px] animate-fade-in">
+      <main className="p-3.5 pb-[120px] animate-fade-in">
         <PakanClient 
           initialJumlahEkor={allKambing.length}
           initialRataBobot={allKambing.length > 0 ? Math.round(totalBobot / allKambing.length) : 0}

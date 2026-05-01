@@ -109,6 +109,40 @@ export async function updateStatusKambing(id: string, status: StatusKambing) {
   });
 }
 
+// ── Hapus Kambing ───────────────────────────────────────
+export async function hapusKambing(id: string) {
+  const { supabaseAdmin, BUCKET_NAME } = await import('@/lib/supabase');
+
+  // Delete photos from Supabase Storage + DB
+  const fotos = await prisma.fotoKambing.findMany({ where: { kambing_id: id } });
+  if (fotos.length > 0) {
+    const filePaths = fotos
+      .map(f => {
+        try {
+          const url = new URL(f.url);
+          const parts = url.pathname.split(`${BUCKET_NAME}/`);
+          return parts[1] || null;
+        } catch { return null; }
+      })
+      .filter(Boolean) as string[];
+
+    if (filePaths.length > 0) {
+      await supabaseAdmin.storage.from(BUCKET_NAME).remove(filePaths);
+    }
+  }
+
+  // Delete related DB records
+  await prisma.fotoKambing.deleteMany({ where: { kambing_id: id } });
+  await prisma.rekamMedis.deleteMany({ where: { kambing_id: id } });
+  await prisma.riwayatKawin.deleteMany({ where: { OR: [{ kambing_betina_id: id }, { pejantan_id: id }] } });
+  
+  // Clear parent references from children
+  await prisma.kambing.updateMany({ where: { induk_jantan_id: id }, data: { induk_jantan_id: null } });
+  await prisma.kambing.updateMany({ where: { induk_betina_id: id }, data: { induk_betina_id: null } });
+  
+  return prisma.kambing.delete({ where: { id } });
+}
+
 // ── Update Market Segment ───────────────────────────────
 export async function updateMarketKambing(id: string, market: MarketType) {
   return prisma.kambing.update({

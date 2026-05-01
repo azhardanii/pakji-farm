@@ -12,7 +12,7 @@ export default async function ReproduksiPage() {
     <>
       <Header />
       
-      <main className="p-3.5 pb-[90px] animate-fade-in">
+      <main className="p-3.5 pb-[120px] animate-fade-in">
         <div className="flex items-center justify-between mb-[13px]">
           <h1 className="font-[family-name:var(--font-serif)] text-xl text-text">Reproduksi</h1>
         </div>
@@ -45,7 +45,13 @@ export default async function ReproduksiPage() {
             return (
               <div key={b.id} className="bg-surface rounded-[16px] border border-border p-3.5 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-2.5 mb-[11px]">
-                  <div className="text-[26px]">🐑</div>
+                  <div className="w-[42px] h-[42px] rounded-[10px] flex items-center justify-center text-[22px] flex-shrink-0 border-[1.5px] border-[#F5C0D8] bg-[#FFF0F6] overflow-hidden">
+                    {b.kambing_betina.foto?.[0]?.url ? (
+                      <img src={b.kambing_betina.foto[0].url} alt={b.kambing_betina.nama || 'Betina'} className="w-full h-full object-cover" />
+                    ) : (
+                      '🐑'
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div className="text-sm font-bold">{b.kambing_betina.nama || 'Tanpa Nama'}</div>
                     <div className="text-[10px] text-text-sm font-mono">{b.kambing_betina.id_sistem}</div>
@@ -109,7 +115,13 @@ export default async function ReproduksiPage() {
             return (
               <div key={`birahi-${b.id}`} className="bg-surface rounded-[16px] border border-border p-3.5 mb-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-2.5 mb-[11px]">
-                  <div className="text-[26px]">🐑</div>
+                  <div className="w-[42px] h-[42px] rounded-[10px] flex items-center justify-center text-[22px] flex-shrink-0 border-[1.5px] border-[#F5C0D8] bg-[#FFF0F6] overflow-hidden">
+                    {b.kambing_betina.foto?.[0]?.url ? (
+                      <img src={b.kambing_betina.foto[0].url} alt={b.kambing_betina.nama || 'Betina'} className="w-full h-full object-cover" />
+                    ) : (
+                      '🐑'
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div className="text-sm font-bold">{b.kambing_betina.nama || 'Tanpa Nama'}</div>
                     <div className="text-[10px] text-text-sm font-mono">{b.kambing_betina.id_sistem}</div>

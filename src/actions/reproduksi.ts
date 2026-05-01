@@ -82,7 +82,7 @@ export async function getReproData() {
       status_berhasil: null, // Belum melahirkan
     },
     include: {
-      kambing_betina: { select: { id: true, nama: true, id_sistem: true } },
+      kambing_betina: { select: { id: true, nama: true, id_sistem: true, foto: { take: 1, orderBy: { created_at: 'desc' } } } },
       pejantan: { select: { nama: true, id_sistem: true } },
     },
     orderBy: { prediksi_lahir: 'asc' },
@@ -102,6 +102,7 @@ export async function getJadwalBirahi() {
       kambing_betina: {
         select: { 
           id: true, nama: true, id_sistem: true, status: true,
+          foto: { take: 1, orderBy: { created_at: 'desc' } },
           riwayat_kawin_betina: {
             where: { status_berhasil: null },
             take: 1,

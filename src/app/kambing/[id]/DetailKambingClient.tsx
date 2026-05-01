@@ -6,7 +6,7 @@ import { hitungUmur, hitungEstimasi, formatRupiah, formatTanggal, hitungPrediksi
 import { uploadFoto, hapusFoto } from '@/actions/foto';
 import Modal from '@/components/ui/Modal';
 import EditKambingForm from '@/components/forms/EditKambingForm';
-import { updateMarketKambing } from '@/actions/kambing';
+import { updateMarketKambing, hapusKambing } from '@/actions/kambing';
 import { MarketType } from '@prisma/client';
 
 import CatatSakitForm from '@/components/forms/CatatSakitForm';
@@ -56,6 +56,21 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<ActionModalType>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await hapusKambing(goat.id);
+      router.push('/kambing');
+      router.refresh();
+    } catch (error) {
+      alert('Gagal menghapus data kambing');
+      setIsDeleting(false);
+    }
+  };
 
   const umur = hitungUmur(goat.tanggal_lahir);
   const est = hitungEstimasi(goat.jenis_kelamin, umur.totalHari);
@@ -92,7 +107,7 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
   };
 
   return (
-    <div className="pb-[90px] bg-bg min-h-screen">
+    <div className="pb-[120px] bg-bg min-h-screen">
       {/* Sticky Top Bar for back navigation */}
       <div className="bg-primary-d p-[14px_16px] flex items-center gap-3 sticky top-[70px] z-[10] border-t border-white/10">
         <button onClick={() => router.back()} className="w-[34px] h-[34px] rounded-[9px] bg-white/12 border border-white/20 flex items-center justify-center text-lg cursor-pointer text-white">
@@ -341,6 +356,14 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
             </div>
           )}
         </div>
+
+        {/* Hapus Kambing */}
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="w-full mt-2 py-3 rounded-[12px] border-[1.5px] border-danger/30 text-danger text-xs font-bold bg-danger-light/50 active:bg-danger-light transition-colors"
+        >
+          🗑️ Hapus Data Kambing
+        </button>
         
       </div>
 
@@ -398,6 +421,35 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
 
       <Modal isOpen={activeModal === 'lahir'} onClose={() => setActiveModal(null)} title="🐣 Catat Kelahiran">
         <CatatKelahiranForm onSuccess={() => setActiveModal(null)} defaultBetinaId={goat.id} />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => { setShowDeleteModal(false); setDeleteConfirmName(''); }} title="⚠️ Hapus Kambing">
+        <div className="mb-4">
+          <div className="bg-danger-light border border-danger/20 rounded-[10px] p-3 mb-4">
+            <div className="text-[12px] font-bold text-danger mb-1">Peringatan: Tindakan ini tidak dapat dibatalkan!</div>
+            <div className="text-[11px] text-text-md leading-[1.5]">
+              Semua data kambing <strong>{goat.nama || goat.id_sistem}</strong> akan dihapus secara permanen termasuk foto, rekam medis, dan riwayat reproduksi.
+            </div>
+          </div>
+          <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">
+            Ketik <span className="text-danger">"{goat.nama || goat.id_sistem}"</span> untuk konfirmasi
+          </label>
+          <input
+            type="text"
+            value={deleteConfirmName}
+            onChange={(e) => setDeleteConfirmName(e.target.value)}
+            placeholder={`Ketik ${goat.nama || goat.id_sistem}...`}
+            className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none"
+          />
+        </div>
+        <button
+          onClick={handleDelete}
+          disabled={deleteConfirmName !== (goat.nama || goat.id_sistem) || isDeleting}
+          className="w-full p-3.5 bg-danger text-white border-none rounded-[11px] text-sm font-bold cursor-pointer transition-colors active:bg-red-800 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {isDeleting ? '⏳ Menghapus...' : '🗑️ Hapus Permanen'}
+        </button>
       </Modal>
     </div>
   );

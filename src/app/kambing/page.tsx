@@ -14,7 +14,7 @@ export default async function KambingPage() {
     <>
       <Header />
       
-      <main className="p-3.5 pb-[90px] animate-fade-in">
+      <main className="p-3.5 pb-[120px] animate-fade-in">
         <GoatListClient initialGoats={initialGoats as any} />
       </main>
 

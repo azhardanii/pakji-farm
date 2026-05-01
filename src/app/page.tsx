@@ -5,6 +5,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import FAB from '@/components/layout/FAB';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() {
   const data = await getDashboardData();
 
@@ -12,7 +14,7 @@ export default async function Dashboard() {
     <>
       <Header />
       
-      <main className="p-3.5 pb-[90px] animate-fade-in">
+      <main className="p-3.5 pb-[120px] animate-fade-in">
         {/* STAT GRID */}
         <div className="grid grid-cols-4 gap-[9px] mb-3.5">
           <div className="bg-surface rounded-[10px] py-[13px] px-2 text-center border border-border shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)] relative overflow-hidden">
@@ -55,11 +57,11 @@ export default async function Dashboard() {
           </div>
         ))}
 
-        {/* AGENDA */}
+        {/* KONDISI KANDANG */}
         <div className="bg-surface rounded-[16px] p-4 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)] border border-border mb-3">
           <div className="text-[10px] font-bold uppercase tracking-wider text-text-sm mb-3.5 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-            Agenda Hari Ini
+            Kondisi Kandang Saat Ini
           </div>
           
           {data.agenda.length === 0 ? (

@@ -21,7 +21,7 @@ export default function KesehatanClient({ riwayatMedis }: { riwayatMedis: Riwaya
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <main className="p-3.5 pb-[90px] animate-fade-in">
+    <main className="p-3.5 pb-[120px] animate-fade-in">
       <div className="flex items-center justify-between mb-[13px]">
         <h1 className="font-[family-name:var(--font-serif)] text-xl text-text">P3K & Rekam Medis</h1>
       </div>

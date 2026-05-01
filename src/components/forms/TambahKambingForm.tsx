@@ -17,6 +17,37 @@ export default function TambahKambingForm({ onSuccess }: { onSuccess: () => void
     getIndukanAktif('BETINA' as Kelamin).then(setBetinaList);
   }, []);
 
+  // Convert image to WebP client-side
+  const convertToWebP = (file: File, quality = 0.82): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        let w = img.width;
+        let h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * (MAX / w)); w = MAX; }
+          else       { w = Math.round(w * (MAX / h)); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Conversion failed'));
+            resolve(new File([blob], 'photo.webp', { type: 'image/webp' }));
+          },
+          'image/webp',
+          quality
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -31,11 +62,12 @@ export default function TambahKambingForm({ onSuccess }: { onSuccess: () => void
           induk_betina_id: (form.get('induk_betina_id') as string) || undefined,
         });
 
-        // If photo is provided, upload it
+        // If photo is provided, convert to WebP then upload
         const photoFile = form.get('foto') as File;
         if (photoFile && photoFile.size > 0) {
+          const webpFile = await convertToWebP(photoFile);
           const photoData = new FormData();
-          photoData.append('file', photoFile);
+          photoData.append('file', webpFile);
           await uploadFoto(kambing.id, photoData);
         }
 

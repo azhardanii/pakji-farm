@@ -11,7 +11,7 @@ export default async function PenjualanPage() {
     <>
       <Header />
       
-      <main className="p-3.5 pb-[90px] animate-fade-in">
+      <main className="p-3.5 pb-[120px] animate-fade-in">
         <PenjualanClient initialData={kambingTerjual as any} />
       </main>
 
