@@ -11,7 +11,6 @@ interface RiwayatItem {
   gejala: string;
   penanganan: string;
   kambing: {
-    id: string;
     nama: string | null;
     id_sistem: string;
     jenis_kelamin: string;
