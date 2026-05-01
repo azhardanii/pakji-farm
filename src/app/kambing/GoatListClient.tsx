@@ -93,10 +93,14 @@ export default function GoatListClient({ initialGoats }: { initialGoats: any[] }
                 className="bg-surface rounded-2xl p-3 px-3.5 border border-border shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)] flex gap-3 items-center cursor-pointer transition-transform active:scale-[0.99] hover:shadow-[0_4px_8px_rgba(0,0,0,0.08)]"
               >
                 {/* Thumb */}
-                <div className={`w-[52px] h-[52px] rounded-xl flex items-center justify-center text-[26px] flex-shrink-0 border-[1.5px] ${
+                <div className={`w-[52px] h-[52px] rounded-xl flex items-center justify-center text-[26px] flex-shrink-0 border-[1.5px] overflow-hidden ${
                   g.jenis_kelamin === 'JANTAN' ? 'bg-[#EBF3FF] border-[#C0D8F5]' : 'bg-[#FFF0F6] border-[#F5C0D8]'
                 }`}>
-                  {g.jenis_kelamin === 'JANTAN' ? '🐐' : '🐑'}
+                  {g.foto?.[0]?.url ? (
+                    <img src={g.foto[0].url} alt={g.nama || 'Goat'} className="w-full h-full object-cover" />
+                  ) : (
+                    g.jenis_kelamin === 'JANTAN' ? '🐐' : '🐑'
+                  )}
                 </div>
 
                 {/* Info */}

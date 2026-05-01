@@ -10,7 +10,7 @@ interface BuntingItem {
   kambing_betina: { id: string; nama: string | null; id_sistem: string };
 }
 
-export default function CatatKelahiranForm({ onSuccess }: { onSuccess: () => void }) {
+export default function CatatKelahiranForm({ onSuccess, defaultBetinaId }: { onSuccess: () => void; defaultBetinaId?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [buntingList, setBuntingList] = useState<BuntingItem[]>([]);
@@ -19,10 +19,12 @@ export default function CatatKelahiranForm({ onSuccess }: { onSuccess: () => voi
     getReproData().then(data => setBuntingList(data as unknown as BuntingItem[]));
   }, []);
 
+  const defaultBuntingItem = defaultBetinaId ? buntingList.find(b => b.kambing_betina_id === defaultBetinaId) : null;
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const selectedId = form.get('riwayat_kawin_id') as string;
+    const selectedId = defaultBuntingItem?.id || (form.get('riwayat_kawin_id') as string);
     const selected = buntingList.find(b => b.id === selectedId);
     if (!selected) return;
 
@@ -40,17 +42,22 @@ export default function CatatKelahiranForm({ onSuccess }: { onSuccess: () => voi
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-3.5">
-        <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Induk Betina (Bunting)</label>
-        <select name="riwayat_kawin_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required>
-          <option value="">Pilih induk bunting...</option>
-          {buntingList.map(b => (
-            <option key={b.id} value={b.id}>
-              {b.kambing_betina.nama || '—'} ({b.kambing_betina.id_sistem}) — Bunting
-            </option>
-          ))}
-        </select>
-      </div>
+      {!defaultBetinaId && (
+        <div className="mb-3.5">
+          <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Induk Betina (Bunting)</label>
+          <select name="riwayat_kawin_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required={!defaultBetinaId}>
+            <option value="">Pilih induk bunting...</option>
+            {buntingList.map(b => (
+              <option key={b.id} value={b.id}>
+                {b.kambing_betina.nama || '—'} ({b.kambing_betina.id_sistem}) — Bunting
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {defaultBetinaId && !defaultBuntingItem && buntingList.length > 0 && (
+        <div className="mb-3.5 text-danger text-xs font-bold bg-danger-light p-2 rounded">Kambing ini tidak tercatat bunting. Tidak bisa mencatat kelahiran.</div>
+      )}
       <div className="grid grid-cols-2 gap-2.5">
         <div className="mb-3.5">
           <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Tanggal Lahir</label>

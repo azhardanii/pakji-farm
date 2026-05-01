@@ -8,15 +8,14 @@ export async function uploadFoto(kambingId: string, formData: FormData) {
   const file = formData.get('file') as File;
   if (!file) throw new Error('No file provided');
 
-  const ext = file.name.split('.').pop();
-  const fileName = `${kambingId}/${Date.now()}.${ext}`;
+  const fileName = `${kambingId}/${Date.now()}.webp`;
   
   const buffer = Buffer.from(await file.arrayBuffer());
-  
+
   const { error: uploadError } = await supabaseAdmin.storage
     .from(BUCKET_NAME)
     .upload(fileName, buffer, {
-      contentType: file.type,
+      contentType: 'image/webp',
       upsert: false,
     });
 

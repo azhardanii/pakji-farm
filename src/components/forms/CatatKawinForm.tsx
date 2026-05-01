@@ -3,11 +3,11 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { catatKawin } from '@/actions/reproduksi';
-import { getKambingAktif } from '@/actions/kambing';
+import { getIndukanAktif } from '@/actions/kambing';
 import { formatTanggal, hitungPrediksiLahir } from '@/lib/calculations';
 import { Kelamin } from '@prisma/client';
 
-export default function CatatKawinForm({ onSuccess }: { onSuccess: () => void }) {
+export default function CatatKawinForm({ onSuccess, defaultBetinaId, defaultPejantanId }: { onSuccess: () => void; defaultBetinaId?: string; defaultPejantanId?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [betinaList, setBetinaList] = useState<Array<{ id: string; id_sistem: string; nama: string | null }>>([]);
@@ -17,9 +17,9 @@ export default function CatatKawinForm({ onSuccess }: { onSuccess: () => void })
   const [prediksiH30, setPrediksiH30] = useState('');
 
   useEffect(() => {
-    getKambingAktif('BETINA' as Kelamin).then(setBetinaList);
-    getKambingAktif('JANTAN' as Kelamin).then(setJantanList);
-  }, []);
+    if (!defaultBetinaId) getIndukanAktif('BETINA' as Kelamin).then(setBetinaList);
+    if (!defaultPejantanId) getIndukanAktif('JANTAN' as Kelamin).then(setJantanList);
+  }, [defaultBetinaId, defaultPejantanId]);
 
   useEffect(() => {
     if (tanggalKawin) {
@@ -37,8 +37,8 @@ export default function CatatKawinForm({ onSuccess }: { onSuccess: () => void })
 
     startTransition(async () => {
       await catatKawin({
-        kambing_betina_id: form.get('betina_id') as string,
-        pejantan_id: form.get('pejantan_id') as string,
+        kambing_betina_id: defaultBetinaId || (form.get('betina_id') as string),
+        pejantan_id: defaultPejantanId || (form.get('pejantan_id') as string),
         tanggal_kawin: form.get('tanggal_kawin') as string,
       });
       router.refresh();
@@ -48,24 +48,28 @@ export default function CatatKawinForm({ onSuccess }: { onSuccess: () => void })
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-3.5">
-        <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Betina</label>
-        <select name="betina_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required>
-          <option value="">Pilih betina...</option>
-          {betinaList.map(k => (
-            <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
-          ))}
-        </select>
-      </div>
-      <div className="mb-3.5">
-        <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Pejantan</label>
-        <select name="pejantan_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required>
-          <option value="">Pilih pejantan...</option>
-          {jantanList.map(k => (
-            <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
-          ))}
-        </select>
-      </div>
+      {!defaultBetinaId && (
+        <div className="mb-3.5">
+          <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Betina</label>
+          <select name="betina_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required={!defaultBetinaId}>
+            <option value="">Pilih betina...</option>
+            {betinaList.map(k => (
+              <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
+            ))}
+          </select>
+        </div>
+      )}
+      {!defaultPejantanId && (
+        <div className="mb-3.5">
+          <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Pejantan</label>
+          <select name="pejantan_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required={!defaultPejantanId}>
+            <option value="">Pilih pejantan...</option>
+            {jantanList.map(k => (
+              <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="mb-3.5">
         <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Tanggal Kawin</label>
         <input name="tanggal_kawin" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" type="date" value={tanggalKawin} onChange={(e) => setTanggalKawin(e.target.value)} required />

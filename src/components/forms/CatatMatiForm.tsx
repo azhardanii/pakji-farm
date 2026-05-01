@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { updateStatusKambing, getKambingAktif } from '@/actions/kambing';
 import { StatusKambing } from '@prisma/client';
 
-export default function CatatMatiForm({ onSuccess }: { onSuccess: () => void }) {
+export default function CatatMatiForm({ onSuccess, defaultKambingId }: { onSuccess: () => void; defaultKambingId?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [kambingList, setKambingList] = useState<Array<{ id: string; id_sistem: string; nama: string | null }>>([]);
@@ -20,7 +20,7 @@ export default function CatatMatiForm({ onSuccess }: { onSuccess: () => void }) 
 
     startTransition(async () => {
       // For now, we just update status. In a real app, you might want to save the death record (date, cause) to a separate table or fields
-      await updateStatusKambing(form.get('kambing_id') as string, StatusKambing.MATI);
+      await updateStatusKambing(defaultKambingId || (form.get('kambing_id') as string), StatusKambing.MATI);
       router.refresh();
       onSuccess();
     });
@@ -28,15 +28,17 @@ export default function CatatMatiForm({ onSuccess }: { onSuccess: () => void }) 
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-3.5">
-        <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Kambing</label>
-        <select name="kambing_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required>
-          <option value="">Pilih kambing...</option>
-          {kambingList.map(k => (
-            <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
-          ))}
-        </select>
-      </div>
+      {!defaultKambingId && (
+        <div className="mb-3.5">
+          <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Kambing</label>
+          <select name="kambing_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required={!defaultKambingId}>
+            <option value="">Pilih kambing...</option>
+            {kambingList.map(k => (
+              <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="mb-3.5">
         <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Tanggal</label>
         <input name="tanggal" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" type="date" required />

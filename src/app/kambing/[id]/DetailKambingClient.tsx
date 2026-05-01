@@ -9,11 +9,53 @@ import EditKambingForm from '@/components/forms/EditKambingForm';
 import { updateMarketKambing } from '@/actions/kambing';
 import { MarketType } from '@prisma/client';
 
+import CatatSakitForm from '@/components/forms/CatatSakitForm';
+import CatatMatiForm from '@/components/forms/CatatMatiForm';
+import CatatJualForm from '@/components/forms/CatatJualForm';
+import CatatKawinForm from '@/components/forms/CatatKawinForm';
+import CatatKelahiranForm from '@/components/forms/CatatKelahiranForm';
+
+type ActionModalType = 'sakit' | 'mati' | 'jual' | 'kawin' | 'lahir' | null;
+
+// ── Helper: convert any image to WebP via canvas ───────
+async function convertToWebP(file: File, quality = 0.82): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // Cap max dimension to 1200px to keep file size small
+      const MAX = 1200;
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * (MAX / w)); w = MAX; }
+        else       { w = Math.round(w * (MAX / h)); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject(new Error('Conversion failed'));
+          resolve(new File([blob], 'photo.webp', { type: 'image/webp' }));
+        },
+        'image/webp',
+        quality
+      );
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export default function DetailKambingClient({ goat }: { goat: any }) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
 
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ActionModalType>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const umur = hitungUmur(goat.tanggal_lahir);
   const est = hitungEstimasi(goat.jenis_kelamin, umur.totalHari);
@@ -27,10 +69,13 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', e.target.files[0]);
     
     try {
+      // Convert to WebP client-side before uploading
+      const webpFile = await convertToWebP(e.target.files[0]);
+      const formData = new FormData();
+      formData.append('file', webpFile);
+      
       await uploadFoto(goat.id, formData);
       router.refresh();
     } catch (error) {
@@ -61,7 +106,10 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
 
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary-light to-surface p-[20px_16px] flex gap-[14px] items-start border-b border-border shadow-sm relative">
-        <div className="w-[78px] h-[78px] rounded-2xl bg-white border-2 border-border flex items-center justify-center text-[38px] flex-shrink-0 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)] overflow-hidden">
+        <div
+          className="w-[78px] h-[78px] rounded-2xl bg-white border-2 border-border flex items-center justify-center text-[38px] flex-shrink-0 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)] overflow-hidden cursor-pointer active:scale-95 transition-transform"
+          onClick={() => thumbnail && setPhotoPreview(thumbnail)}
+        >
           {thumbnail ? (
             <img src={thumbnail} alt={goat.nama || 'Goat'} className="w-full h-full object-cover" />
           ) : (
@@ -71,7 +119,11 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
         
         {/* Upload Button overlay */}
         <label className="absolute top-[85px] left-[78px] w-8 h-8 bg-surface rounded-full shadow-md border border-border flex items-center justify-center text-sm cursor-pointer z-10 active:scale-95 transition-transform">
-          📸
+          {uploading ? (
+            <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          ) : (
+            '📸'
+          )}
           <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={uploading} />
         </label>
 
@@ -188,6 +240,44 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
           </div>
         </div>
 
+        {/* Aksi Cepat */}
+        <div className="bg-surface rounded-[16px] p-4 border border-border shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-text-sm mb-3 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+            Aksi Cepat
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => setActiveModal('sakit')} className="bg-surface2 rounded-[9px] py-2 px-3 flex items-center gap-2 border border-border text-xs font-semibold text-text-md active:bg-primary-light active:border-primary">
+              <span className="text-base">🩺</span> Rekam Medis
+            </button>
+            {goat.status === 'AKTIF' && !isCempe && goat.jenis_kelamin === 'BETINA' && !isBunting && (
+              <button onClick={() => setActiveModal('kawin')} className="bg-surface2 rounded-[9px] py-2 px-3 flex items-center gap-2 border border-border text-xs font-semibold text-text-md active:bg-primary-light active:border-primary">
+                <span className="text-base">💘</span> Catat Kawin
+              </button>
+            )}
+            {goat.status === 'AKTIF' && !isCempe && goat.jenis_kelamin === 'JANTAN' && (
+              <button onClick={() => setActiveModal('kawin')} className="bg-surface2 rounded-[9px] py-2 px-3 flex items-center gap-2 border border-border text-xs font-semibold text-text-md active:bg-primary-light active:border-primary">
+                <span className="text-base">💘</span> Catat Kawin
+              </button>
+            )}
+            {goat.status === 'AKTIF' && isBunting && (
+              <button onClick={() => setActiveModal('lahir')} className="bg-surface2 rounded-[9px] py-2 px-3 flex items-center gap-2 border border-border text-xs font-semibold text-text-md active:bg-primary-light active:border-primary">
+                <span className="text-base">🐣</span> Melahirkan
+              </button>
+            )}
+            {goat.status === 'AKTIF' && (
+              <button onClick={() => setActiveModal('jual')} className="bg-surface2 rounded-[9px] py-2 px-3 flex items-center gap-2 border border-border text-xs font-semibold text-text-md active:bg-primary-light active:border-primary">
+                <span className="text-base">💰</span> Terjual
+              </button>
+            )}
+            {goat.status === 'AKTIF' && (
+              <button onClick={() => setActiveModal('mati')} className="bg-surface2 rounded-[9px] py-2 px-3 flex items-center gap-2 border border-border text-xs font-semibold text-danger active:bg-danger-light active:border-danger">
+                <span className="text-base">💀</span> Catat Mati
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Reproduksi Card (Jika Bunting) */}
         {isBunting && (
           <div className="bg-surface rounded-[16px] p-4 border border-border shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]">
@@ -218,12 +308,20 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
         )}
 
         {/* Rekam Medis Preview */}
-        {goat.rekam_medis?.length > 0 && (
-          <div className="bg-surface rounded-[16px] p-4 border border-border shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-warning mb-3 flex items-center gap-1.5">
+        <div className="bg-surface rounded-[16px] p-4 border border-border shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.05)]">
+          <div className="flex justify-between items-center mb-3">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-warning flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0" />
-              Riwayat P3K (Terbaru)
+              Riwayat Kesehatan
             </div>
+            {goat.rekam_medis?.length > 0 && (
+              <button onClick={() => setActiveModal('sakit')} className="text-[10px] font-bold text-primary bg-primary-light px-2 py-1 rounded-md">
+                + Tambah
+              </button>
+            )}
+          </div>
+          
+          {goat.rekam_medis?.length > 0 ? (
             <div className="space-y-3">
               {goat.rekam_medis.slice(0,3).map((r: any) => (
                 <div key={r.id} className="border-b border-border last:border-0 pb-2 last:pb-0">
@@ -235,14 +333,71 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-4 bg-surface2 rounded-[10px] border border-border/50">
+              <div className="text-xl mb-1">🌿</div>
+              <div className="text-[11.5px] font-semibold text-text-md">Belum pernah sakit</div>
+              <div className="text-[10px] text-text-sm">Kambing dalam kondisi sehat!</div>
+            </div>
+          )}
+        </div>
         
       </div>
+
+      {/* ── Photo Preview Popup ── */}
+      {photoPreview && (
+        <div
+          className="fixed inset-0 bg-black/80 z-[600] flex items-center justify-center backdrop-blur-sm animate-fade-in"
+          onClick={() => setPhotoPreview(null)}
+        >
+          <div className="relative max-w-[400px] w-[92%] animate-slide-up-modal" onClick={e => e.stopPropagation()}>
+            <img
+              src={photoPreview}
+              alt={goat.nama || 'Foto Kambing'}
+              className="w-full rounded-2xl shadow-2xl border-2 border-white/20"
+              style={{ maxHeight: '75vh', objectFit: 'contain' }}
+            />
+            <div className="text-center mt-3 text-white/80 text-xs font-semibold">
+              {goat.nama || goat.id_sistem}
+            </div>
+            <button
+              onClick={() => setPhotoPreview(null)}
+              className="absolute -top-3 -right-3 w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-lg text-text font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       <Modal isOpen={isEditModalOpen} onClose={() => setEditModalOpen(false)} title="✏️ Edit Data Kambing">
         <EditKambingForm goat={goat} onSuccess={() => setEditModalOpen(false)} />
+      </Modal>
+
+      {/* Quick Action Modals */}
+      <Modal isOpen={activeModal === 'sakit'} onClose={() => setActiveModal(null)} title="🩺 Catat Pengobatan">
+        <CatatSakitForm onSuccess={() => setActiveModal(null)} defaultKambingId={goat.id} />
+      </Modal>
+
+      <Modal isOpen={activeModal === 'mati'} onClose={() => setActiveModal(null)} title="💀 Catat Kambing Mati">
+        <CatatMatiForm onSuccess={() => setActiveModal(null)} defaultKambingId={goat.id} />
+      </Modal>
+
+      <Modal isOpen={activeModal === 'jual'} onClose={() => setActiveModal(null)} title="💰 Catat Penjualan">
+        <CatatJualForm onSuccess={() => setActiveModal(null)} defaultKambingId={goat.id} />
+      </Modal>
+
+      <Modal isOpen={activeModal === 'kawin'} onClose={() => setActiveModal(null)} title="💘 Catat Perkawinan">
+        <CatatKawinForm 
+          onSuccess={() => setActiveModal(null)} 
+          defaultBetinaId={goat.jenis_kelamin === 'BETINA' ? goat.id : undefined}
+          defaultPejantanId={goat.jenis_kelamin === 'JANTAN' ? goat.id : undefined}
+        />
+      </Modal>
+
+      <Modal isOpen={activeModal === 'lahir'} onClose={() => setActiveModal(null)} title="🐣 Catat Kelahiran">
+        <CatatKelahiranForm onSuccess={() => setActiveModal(null)} defaultBetinaId={goat.id} />
       </Modal>
     </div>
   );

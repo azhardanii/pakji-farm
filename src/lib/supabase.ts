@@ -6,4 +6,4 @@ export const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export const BUCKET_NAME = 'kambing-foto';
+export const BUCKET_NAME = 'pakji-kambing-photo';

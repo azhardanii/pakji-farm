@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { catatSakit } from '@/actions/kesehatan';
 import { getKambingAktif } from '@/actions/kambing';
 
-export default function CatatSakitForm({ onSuccess }: { onSuccess: () => void }) {
+export default function CatatSakitForm({ onSuccess, defaultKambingId }: { onSuccess: () => void; defaultKambingId?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [kambingList, setKambingList] = useState<Array<{ id: string; id_sistem: string; nama: string | null }>>([]);
@@ -20,7 +20,7 @@ export default function CatatSakitForm({ onSuccess }: { onSuccess: () => void })
 
     startTransition(async () => {
       await catatSakit({
-        kambing_id: form.get('kambing_id') as string,
+        kambing_id: defaultKambingId || (form.get('kambing_id') as string),
         tanggal: form.get('tanggal') as string,
         gejala: form.get('gejala') as string,
         penanganan: form.get('penanganan') as string,
@@ -32,15 +32,17 @@ export default function CatatSakitForm({ onSuccess }: { onSuccess: () => void })
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-3.5">
-        <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Kambing</label>
-        <select name="kambing_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required>
-          <option value="">Pilih kambing...</option>
-          {kambingList.map(k => (
-            <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
-          ))}
-        </select>
-      </div>
+      {!defaultKambingId && (
+        <div className="mb-3.5">
+          <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Pilih Kambing</label>
+          <select name="kambing_id" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" required={!defaultKambingId}>
+            <option value="">Pilih kambing...</option>
+            {kambingList.map(k => (
+              <option key={k.id} value={k.id}>{k.nama || '—'} ({k.id_sistem})</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="mb-3.5">
         <label className="text-[11px] font-bold text-text-sm mb-1.5 block uppercase tracking-wider">Tanggal Sakit</label>
         <input name="tanggal" className="form-input w-full p-[10px_13px] border-[1.5px] border-border rounded-[9px] text-sm bg-surface2 text-text outline-none" type="date" required />
