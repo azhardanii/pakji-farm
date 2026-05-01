@@ -4,6 +4,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import FAB from '@/components/layout/FAB';
 import GoatListClient from './GoatListClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function KambingPage() {
   // Fetch initial data
   const initialGoats = await getSemuaKambing({ status: 'ALL' });
