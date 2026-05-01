@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateStatusKambing, getKambingAktif } from '@/actions/kambing';
 import { StatusKambing } from '@prisma/client';
+import toast from 'react-hot-toast';
 
 export default function CatatJualForm({ onSuccess, defaultKambingId }: { onSuccess: () => void; defaultKambingId?: string }) {
   const router = useRouter();
@@ -19,10 +20,14 @@ export default function CatatJualForm({ onSuccess, defaultKambingId }: { onSucce
     const form = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      // In a real app, we would save sale details (date, price, buyer).
-      await updateStatusKambing(defaultKambingId || (form.get('kambing_id') as string), StatusKambing.TERJUAL);
-      router.refresh();
-      onSuccess();
+      try {
+        await updateStatusKambing(defaultKambingId || (form.get('kambing_id') as string), StatusKambing.TERJUAL);
+        toast.success('Kambing berhasil dicatat sebagai Terjual!');
+        router.refresh();
+        onSuccess();
+      } catch (error) {
+        toast.error('Gagal mencatat data jual');
+      }
     });
   };
 

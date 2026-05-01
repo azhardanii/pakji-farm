@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { catatSakit } from '@/actions/kesehatan';
 import { getKambingAktif } from '@/actions/kambing';
+import toast from 'react-hot-toast';
 
 export default function CatatSakitForm({ onSuccess, defaultKambingId }: { onSuccess: () => void; defaultKambingId?: string }) {
   const router = useRouter();
@@ -19,14 +20,19 @@ export default function CatatSakitForm({ onSuccess, defaultKambingId }: { onSucc
     const form = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      await catatSakit({
-        kambing_id: defaultKambingId || (form.get('kambing_id') as string),
-        tanggal: form.get('tanggal') as string,
-        gejala: form.get('gejala') as string,
-        penanganan: form.get('penanganan') as string,
-      });
-      router.refresh();
-      onSuccess();
+      try {
+        await catatSakit({
+          kambing_id: defaultKambingId || (form.get('kambing_id') as string),
+          tanggal: form.get('tanggal') as string,
+          gejala: form.get('gejala') as string,
+          penanganan: form.get('penanganan') as string,
+        });
+        toast.success('Rekam medis berhasil dicatat!');
+        router.refresh();
+        onSuccess();
+      } catch (error) {
+        toast.error('Gagal mencatat rekam medis');
+      }
     });
   };
 

@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "Sistem ERP mini untuk memusatkan aktivitas operasional peternakan kambing mandiri. Monitoring real-time bobot, harga, reproduksi, dan pakan.",
 };
 
+import { Toaster } from 'react-hot-toast';
+
 export default function RootLayout({
   children,
 }: {
@@ -28,6 +30,7 @@ export default function RootLayout({
     <html lang="id">
       <body className={`${dmSans.variable} ${dmSerif.variable} antialiased`}>
         {children}
+        <Toaster position="bottom-center" toastOptions={{ className: 'font-[family-name:var(--font-sans)] text-sm shadow-[0_4px_16px_rgba(0,0,0,0.1)] rounded-[12px]' }} />
       </body>
     </html>
   );

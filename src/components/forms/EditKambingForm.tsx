@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { updateKambing, getIndukanAktif } from '@/actions/kambing';
 import { Kelamin } from '@prisma/client';
 import { formatTanggal } from '@/lib/calculations';
+import toast from 'react-hot-toast';
 
 export default function EditKambingForm({ goat, onSuccess }: { goat: any, onSuccess: () => void }) {
   const router = useRouter();
@@ -22,15 +23,20 @@ export default function EditKambingForm({ goat, onSuccess }: { goat: any, onSucc
     const form = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      await updateKambing(goat.id, {
-        nama: form.get('nama') as string,
-        jenis_kelamin: form.get('jenis_kelamin') as Kelamin,
-        tanggal_lahir: form.get('tanggal_lahir') as string,
-        induk_jantan_id: (form.get('induk_jantan_id') as string) || undefined,
-        induk_betina_id: (form.get('induk_betina_id') as string) || undefined,
-      });
-      router.refresh();
-      onSuccess();
+      try {
+        await updateKambing(goat.id, {
+          nama: form.get('nama') as string,
+          jenis_kelamin: form.get('jenis_kelamin') as Kelamin,
+          tanggal_lahir: form.get('tanggal_lahir') as string,
+          induk_jantan_id: (form.get('induk_jantan_id') as string) || undefined,
+          induk_betina_id: (form.get('induk_betina_id') as string) || undefined,
+        });
+        toast.success('Data kambing berhasil diperbarui!');
+        router.refresh();
+        onSuccess();
+      } catch (error) {
+        toast.error('Gagal memperbarui data kambing');
+      }
     });
   };
   

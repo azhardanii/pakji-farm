@@ -6,6 +6,7 @@ import { catatKawin } from '@/actions/reproduksi';
 import { getIndukanAktif } from '@/actions/kambing';
 import { formatTanggal, hitungPrediksiLahir } from '@/lib/calculations';
 import { Kelamin } from '@prisma/client';
+import toast from 'react-hot-toast';
 
 export default function CatatKawinForm({ onSuccess, defaultBetinaId, defaultPejantanId }: { onSuccess: () => void; defaultBetinaId?: string; defaultPejantanId?: string }) {
   const router = useRouter();
@@ -36,13 +37,18 @@ export default function CatatKawinForm({ onSuccess, defaultBetinaId, defaultPeja
     const form = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      await catatKawin({
-        kambing_betina_id: defaultBetinaId || (form.get('betina_id') as string),
-        pejantan_id: defaultPejantanId || (form.get('pejantan_id') as string),
-        tanggal_kawin: form.get('tanggal_kawin') as string,
-      });
-      router.refresh();
-      onSuccess();
+      try {
+        await catatKawin({
+          kambing_betina_id: defaultBetinaId || (form.get('kambing_betina_id') as string),
+          pejantan_id: defaultPejantanId || (form.get('pejantan_id') as string),
+          tanggal_kawin: form.get('tanggal_kawin') as string,
+        });
+        toast.success('Data perkawinan berhasil dicatat!');
+        router.refresh();
+        onSuccess();
+      } catch (error) {
+        toast.error('Gagal mencatat data perkawinan');
+      }
     });
   };
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { catatKelahiran, getReproData } from '@/actions/reproduksi';
+import toast from 'react-hot-toast';
 
 interface BuntingItem {
   id: string;
@@ -29,14 +30,19 @@ export default function CatatKelahiranForm({ onSuccess, defaultBetinaId }: { onS
     if (!selected) return;
 
     startTransition(async () => {
-      await catatKelahiran({
-        kambing_betina_id: selected.kambing_betina_id,
-        riwayat_kawin_id: selectedId,
-        tanggal_lahir: form.get('tanggal_lahir') as string,
-        jumlah_cempe: parseInt(form.get('jumlah_cempe') as string) || 1,
-      });
-      router.refresh();
-      onSuccess();
+      try {
+        await catatKelahiran({
+          kambing_betina_id: selected.kambing_betina_id,
+          riwayat_kawin_id: selectedId,
+          tanggal_lahir: form.get('tanggal_lahir') as string,
+          jumlah_cempe: parseInt(form.get('jumlah_cempe') as string) || 1,
+        });
+        toast.success('Kelahiran berhasil dicatat!');
+        router.refresh();
+        onSuccess();
+      } catch (error) {
+        toast.error('Gagal mencatat data kelahiran');
+      }
     });
   };
 

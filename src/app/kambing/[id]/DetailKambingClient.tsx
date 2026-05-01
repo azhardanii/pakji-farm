@@ -8,6 +8,7 @@ import Modal from '@/components/ui/Modal';
 import EditKambingForm from '@/components/forms/EditKambingForm';
 import { updateMarketKambing, hapusKambing } from '@/actions/kambing';
 import { MarketType } from '@prisma/client';
+import toast from 'react-hot-toast';
 
 import CatatSakitForm from '@/components/forms/CatatSakitForm';
 import CatatMatiForm from '@/components/forms/CatatMatiForm';
@@ -64,10 +65,11 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
     setIsDeleting(true);
     try {
       await hapusKambing(goat.id);
+      toast.success('Data kambing berhasil dihapus!');
       router.push('/kambing');
       router.refresh();
     } catch (error) {
-      alert('Gagal menghapus data kambing');
+      toast.error('Gagal menghapus data kambing');
       setIsDeleting(false);
     }
   };
@@ -92,9 +94,10 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
       formData.append('file', webpFile);
       
       await uploadFoto(goat.id, formData);
+      toast.success('Foto berhasil diupload!');
       router.refresh();
     } catch (error) {
-      alert('Gagal upload foto');
+      toast.error('Gagal upload foto');
     } finally {
       setUploading(false);
     }
@@ -102,8 +105,13 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
 
   const handleMarketChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as MarketType;
-    await updateMarketKambing(goat.id, val);
-    router.refresh();
+    try {
+      await updateMarketKambing(goat.id, val);
+      toast.success('Segmentasi pasar diperbarui!');
+      router.refresh();
+    } catch (error) {
+      toast.error('Gagal memperbarui segmentasi');
+    }
   };
 
   return (

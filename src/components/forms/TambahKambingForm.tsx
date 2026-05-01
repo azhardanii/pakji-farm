@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { tambahKambing, getIndukanAktif } from '@/actions/kambing';
 import { uploadFoto } from '@/actions/foto';
 import { Kelamin } from '@prisma/client';
+import toast from 'react-hot-toast';
 
 export default function TambahKambingForm({ onSuccess }: { onSuccess: () => void }) {
   const router = useRouter();
@@ -71,10 +72,11 @@ export default function TambahKambingForm({ onSuccess }: { onSuccess: () => void
           await uploadFoto(kambing.id, photoData);
         }
 
+        toast.success('Data kambing berhasil ditambahkan!');
         router.refresh();
         onSuccess();
       } catch (error) {
-        alert('Terjadi kesalahan saat menyimpan data');
+        toast.error('Terjadi kesalahan saat menyimpan data');
       }
     });
   };

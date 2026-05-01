@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateStatusKambing, getKambingAktif } from '@/actions/kambing';
 import { StatusKambing } from '@prisma/client';
+import toast from 'react-hot-toast';
 
 export default function CatatMatiForm({ onSuccess, defaultKambingId }: { onSuccess: () => void; defaultKambingId?: string }) {
   const router = useRouter();
@@ -19,10 +20,14 @@ export default function CatatMatiForm({ onSuccess, defaultKambingId }: { onSucce
     const form = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      // For now, we just update status. In a real app, you might want to save the death record (date, cause) to a separate table or fields
-      await updateStatusKambing(defaultKambingId || (form.get('kambing_id') as string), StatusKambing.MATI);
-      router.refresh();
-      onSuccess();
+      try {
+        await updateStatusKambing(defaultKambingId || (form.get('kambing_id') as string), StatusKambing.MATI);
+        toast.success('Status kambing berhasil diubah menjadi Mati!');
+        router.refresh();
+        onSuccess();
+      } catch (error) {
+        toast.error('Gagal mencatat data mati');
+      }
     });
   };
 
