@@ -66,8 +66,10 @@ export default function DetailKambingClient({ goat }: { goat: any }) {
     try {
       await hapusKambing(goat.id);
       toast.success('Data kambing berhasil dihapus!');
-      router.push('/kambing');
-      router.refresh();
+      setTimeout(() => {
+        router.replace('/kambing');
+        router.refresh();
+      }, 500);
     } catch (error) {
       toast.error('Gagal menghapus data kambing');
       setIsDeleting(false);
